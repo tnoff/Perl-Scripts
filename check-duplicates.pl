@@ -1,9 +1,14 @@
 #!/usr/bin/perl -w
+# Usage of script
+# check-duplicates.pl <directory
+
+# Check for file duplicates using MD5 checksum
 
 use strict;
 use warnings;
 use Digest::MD5  qw(md5_hex);
 
+# Check arguments
 my $num_args = $#ARGV + 1;
 
 if ($num_args < 1) {
@@ -13,6 +18,7 @@ if ($num_args < 1) {
 
 my $directory_name = $ARGV[0];
 
+# Get directory file list
 sub directory_files {
     my($directory_name) = @_;
     opendir(DIR, $directory_name);
@@ -32,6 +38,8 @@ my @file_hashes = ();
 
 my $count;
 
+# Add files and hashes to list
+# Use recursion for additional subdirs
 sub check_directory {
     my($dir_files_ref, $dir_prefix) = @_;
     my @dir_files = @$dir_files_ref;
@@ -39,7 +47,7 @@ sub check_directory {
     my @hashes = ();
     foreach my $file_name (@dir_files) {
         my $better_name = "${dir_prefix}${file_name}";
-        # check for directory
+        # Check for directory
         if ( -d $better_name){
             my @dir_files = directory_files($better_name);
             my($sub_name, $sub_hash) = check_directory(\@dir_files, "${better_name}/");
@@ -47,6 +55,7 @@ sub check_directory {
             push(@hashes, @$sub_hash);
             next;
         }
+        # Get hash
         open(my $FILE, $better_name);
         binmode($FILE);
         my $hash = Digest::MD5->new->addfile($FILE)->hexdigest;
